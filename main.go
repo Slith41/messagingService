@@ -6,31 +6,39 @@ import (
 	"net/smtp"
 )
 
-func sendMail(rw http.ResponseWriter, r *http.Request) {
+type sender struct {
+	email    string
+	passwrod string
+}
 
-	smtpHost := "smtp.gmail.com"
-	smtpPort := "587"
+type receiver struct {
+	emails []string
+}
+
+func send(rw http.ResponseWriter, r *http.Request) {
 
 	switch r.Method {
 	case "GET":
 		http.ServeFile(rw, r, "resources/send.html")
 	case "POST":
-		receiverEmail := []string{r.FormValue("receiverEmail")}
-		message := []byte(r.FormValue("message"))
-		senderEmail := r.FormValue("senderEmail")
-		senderPassword := r.FormValue("senderPassword")
-		auth := smtp.PlainAuth("", senderEmail, senderPassword, smtpHost)
-		err := smtp.SendMail(smtpHost+":"+smtpPort, auth, senderEmail, receiverEmail, message)
-		if err != nil {
-			fmt.Println(err)
-			return
-		}
-		fmt.Println("Email Sent Successfully!")
+
+		http.ServeFile(rw, r, "resources/send.html")
 	}
 }
 
+func sendMail(senderData sender, receiverData receiver, message []byte) {
+	smtpHost := "smtp.gmail.com"
+	smtpPort := "587"
+	auth := smtp.PlainAuth("", senderData.email, senderData.passwrod, smtpHost)
+	err := smtp.SendMail(smtpHost+":"+smtpPort, auth, senderData.email, receiverData.emails, message)
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println("Message was send successfully.")
+}
+
 func setupRouts() {
-	http.HandleFunc("/send", sendMail)
+	http.HandleFunc("/send", send)
 	http.ListenAndServe(":8080", nil)
 }
 
