@@ -7,8 +7,6 @@ import (
 )
 
 func sendMail(rw http.ResponseWriter, r *http.Request) {
-	from := "ebanyvrotblyatvashegocasino@gmail.com"
-	password := "A123456789b"
 
 	smtpHost := "smtp.gmail.com"
 	smtpPort := "587"
@@ -19,8 +17,10 @@ func sendMail(rw http.ResponseWriter, r *http.Request) {
 	case "POST":
 		receiverEmail := []string{r.FormValue("receiverEmail")}
 		message := []byte(r.FormValue("message"))
-		auth := smtp.PlainAuth("", from, password, smtpHost)
-		err := smtp.SendMail(smtpHost+":"+smtpPort, auth, from, receiverEmail, message)
+		senderEmail := r.FormValue("senderEmail")
+		senderPassword := r.FormValue("senderPassword")
+		auth := smtp.PlainAuth("", senderEmail, senderPassword, smtpHost)
+		err := smtp.SendMail(smtpHost+":"+smtpPort, auth, senderEmail, receiverEmail, message)
 		if err != nil {
 			fmt.Println(err)
 			return
