@@ -1,19 +1,62 @@
 package main
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/smtp"
+
+	_ "github.com/lib/pq"
 )
 
-type sender struct {
+type Sender struct {
 	Email    string
 	Password string
 }
 
-type receiver struct {
+type Receiver struct {
 	Emails []string
+}
+
+type Email struct {
+	email string
+}
+
+const (
+	DB_USER     = "slith"
+	DB_PASSWORD = "liac1912"
+	DB_NAME     = "emails"
+)
+
+func DataFromDataBase() {
+
+	connStr := "user=postgres password=liac1912 dbname=emails sslmode=disable"
+	db, err := sql.Open("postgres", connStr)
+	if err != nil {
+		panic(err)
+	}
+	defer db.Close()
+
+	rows, err := db.Query("select * from emails")
+	if err != nil {
+		panic(err)
+	}
+	defer rows.Close()
+	emails := []Email{}
+
+	for rows.Next() {
+		p := Email{}
+		err := rows.Scan(&emails)
+		if err != nil {
+			fmt.Println(err)
+			continue
+		}
+		emails = append(emails, p)
+	}
+	for _, p := range emails {
+		fmt.Println(&p.email)
+	}
 }
 
 func send(rw http.ResponseWriter, r *http.Request) {
@@ -25,7 +68,7 @@ func send(rw http.ResponseWriter, r *http.Request) {
 
 		receiversEmails := parseEmailsInJSON(testJSON)
 
-		var senderData sender
+		var senderData Sender
 		senderData.Email = "ebanyvrotblyatvashegocasino@gmail.com"
 		senderData.Password = "A123456789b"
 
@@ -37,7 +80,7 @@ func send(rw http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func sendMail(senderData sender, receiverData receiver, message []byte) {
+func sendMail(senderData Sender, receiverData Receiver, message []byte) {
 	smtpHost := "smtp.gmail.com"
 	smtpPort := "587"
 	auth := smtp.PlainAuth("", senderData.Email, senderData.Password, smtpHost)
@@ -48,8 +91,8 @@ func sendMail(senderData sender, receiverData receiver, message []byte) {
 	fmt.Println("Message was send successfully.")
 }
 
-func parseEmailsInJSON(JSONarray string) receiver {
-	var receivers receiver
+func parseEmailsInJSON(JSONarray string) Receiver {
+	var receivers Receiver
 	json.Unmarshal([]byte(JSONarray), &receivers)
 
 	return receivers
@@ -60,5 +103,14 @@ func setupRouts() {
 }
 
 func main() {
+
 	setupRouts()
+	DataFromDataBase()
+
+}
+
+func checkErr(err error) {
+	if err != nil {
+		panic(err)
+	}
 }
