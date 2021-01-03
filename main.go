@@ -10,9 +10,6 @@ import (
 	_ "github.com/lib/pq"
 )
 
-<<<<<<< HEAD
-type Sender struct {
-=======
 type dbinfo struct {
 	dbDriver   string
 	dbUser     string
@@ -21,53 +18,12 @@ type dbinfo struct {
 }
 
 type sender struct {
->>>>>>> 25c1eb309caab1c9ab347b4c5330e34293de1c7c
 	Email    string
 	Password string
 }
 
-type Receiver struct {
+type receiver struct {
 	Emails []string
-}
-
-type Email struct {
-	email string
-}
-
-const (
-	DB_USER     = "slith"
-	DB_PASSWORD = "liac1912"
-	DB_NAME     = "emails"
-)
-
-func DataFromDataBase() {
-
-	connStr := "user=postgres password=liac1912 dbname=emails sslmode=disable"
-	db, err := sql.Open("postgres", connStr)
-	if err != nil {
-		panic(err)
-	}
-	defer db.Close()
-
-	rows, err := db.Query("select * from emails")
-	if err != nil {
-		panic(err)
-	}
-	defer rows.Close()
-	emails := []Email{}
-
-	for rows.Next() {
-		p := Email{}
-		err := rows.Scan(&emails)
-		if err != nil {
-			fmt.Println(err)
-			continue
-		}
-		emails = append(emails, p)
-	}
-	for _, p := range emails {
-		fmt.Println(&p.email)
-	}
 }
 
 func send(rw http.ResponseWriter, r *http.Request) {
@@ -79,15 +35,9 @@ func send(rw http.ResponseWriter, r *http.Request) {
 
 		receiversEmails := parseEmailsInJSON(testJSON)
 
-<<<<<<< HEAD
-		var senderData Sender
-		senderData.Email = "ebanyvrotblyatvashegocasino@gmail.com"
-		senderData.Password = "A123456789b"
-=======
 		var senderData sender
 		senderData.Email = "***"
 		senderData.Password = "***"
->>>>>>> 25c1eb309caab1c9ab347b4c5330e34293de1c7c
 
 		message := []byte("This is a robbery! Lay down and give me your money")
 
@@ -97,7 +47,7 @@ func send(rw http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func sendMail(senderData Sender, receiverData Receiver, message []byte) {
+func sendMail(senderData sender, receiverData receiver, message []byte) {
 	smtpHost := "smtp.gmail.com"
 	smtpPort := "587"
 	auth := smtp.PlainAuth("", senderData.Email, senderData.Password, smtpHost)
@@ -108,8 +58,8 @@ func sendMail(senderData Sender, receiverData Receiver, message []byte) {
 	fmt.Println("Message was send successfully.")
 }
 
-func parseEmailsInJSON(JSONarray string) Receiver {
-	var receivers Receiver
+func parseEmailsInJSON(JSONarray string) receiver {
+	var receivers receiver
 	json.Unmarshal([]byte(JSONarray), &receivers)
 
 	return receivers
@@ -132,14 +82,5 @@ func setupRouts() {
 }
 
 func main() {
-
 	setupRouts()
-	DataFromDataBase()
-
-}
-
-func checkErr(err error) {
-	if err != nil {
-		panic(err)
-	}
 }
