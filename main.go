@@ -53,9 +53,8 @@ func sendMail(senderData sender, receiverData receiver, message []byte) {
 	smtpPort := "587"
 	auth := smtp.PlainAuth("", senderData.Email, senderData.Password, smtpHost)
 	err := smtp.SendMail(smtpHost+":"+smtpPort, auth, senderData.Email, receiverData.Emails, message)
-	if err != nil {
-		fmt.Println(err)
-	}
+	checkErr(err)
+
 	fmt.Println("Message was send successfully.")
 }
 
@@ -69,13 +68,11 @@ func parseEmailsInJSON(JSONarray string) receiver {
 func insertEmailIntoTable(db dbinfo, table string, email string) {
 	dataSourceName := fmt.Sprintf("user=%s password=%s dbname=%s sslmode=disable", db.dbUser, db.dbPassword, db.dbName)
 	database, err := sql.Open(db.dbDriver, dataSourceName)
-	if err != nil {
-		fmt.Println(err)
-	}
+	checkErr(err)
+
 	err = database.QueryRow("INSERT INTO "+table+"(email) VALUES($1);", email).Scan()
-	if err != nil {
-		fmt.Println(err)
-	}
+	checkErr(err)
+
 }
 
 func insertEmailsIntoTable(db dbinfo, table string, emails []string) {
@@ -87,21 +84,18 @@ func insertEmailsIntoTable(db dbinfo, table string, emails []string) {
 func selectAllFromTable(db dbinfo, table string) map[string]time.Time {
 	dataSourceName := fmt.Sprintf("user=%s password=%s dbname=%s sslmode=disable", db.dbUser, db.dbPassword, db.dbName)
 	database, err := sql.Open(db.dbDriver, dataSourceName)
-	if err != nil {
-		fmt.Println(err)
-	}
+	checkErr(err)
+
 	rows, err := database.Query("SELECT * FROM " + table + ";")
-	if err != nil {
-		fmt.Println(err)
-	}
+	checkErr(err)
+
 	var emailsMap map[string]time.Time
 	for rows.Next() {
 		var email string
 		var createdAt time.Time
 		err = rows.Scan(&email, &createdAt)
-		if err != nil {
-			fmt.Println(err)
-		}
+		checkErr(err)
+
 		emailsMap[email] = createdAt
 	}
 	return emailsMap
@@ -110,18 +104,13 @@ func selectAllFromTable(db dbinfo, table string) map[string]time.Time {
 func deleteBasedOnEmail(db dbinfo, table string, email string) {
 	dataSourceName := fmt.Sprintf("user=%s password=%s dbname=%s sslmode=disable", db.dbUser, db.dbPassword, db.dbName)
 	database, err := sql.Open(db.dbDriver, dataSourceName)
-	if err != nil {
-		fmt.Println(err)
-	}
+	checkErr(err)
 
 	stmt, err := database.Prepare("DELETE FROM emails_array where email=$1")
-	if err != nil {
-		fmt.Println(err)
-	}
+	checkErr(err)
+
 	_, err = stmt.Exec(email)
-	if err != nil {
-		fmt.Println(err)
-	}
+	checkErr(err)
 }
 
 func setupRouts() {
@@ -131,4 +120,10 @@ func setupRouts() {
 
 func main() {
 	setupRouts()
+}
+
+func checkErr(err error) {
+	if err != nil {
+		fmt.Println(err)
+	}
 }
