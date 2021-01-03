@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/smtp"
+	"time"
 
 	_ "github.com/lib/pq"
 )
@@ -65,17 +66,64 @@ func parseEmailsInJSON(JSONarray string) receiver {
 	return receivers
 }
 
-func insertEmailIntoDatabase(db dbinfo, table string, email string) {
+func insertEmailIntoTable(db dbinfo, table string, email string) {
 	dataSourceName := fmt.Sprintf("user=%s password=%s dbname=%s sslmode=disable", db.dbUser, db.dbPassword, db.dbName)
 	database, err := sql.Open(db.dbDriver, dataSourceName)
 	if err != nil {
 		fmt.Println(err)
 	}
-	err = database.QueryRow("INSERT INTO emails_array(email) VALUES($1);", email).Scan()
+	err = database.QueryRow("INSERT INTO "+table+"(email) VALUES($1);", email).Scan()
 	if err != nil {
 		fmt.Println(err)
 	}
 }
+
+func insertEmailsIntoTable(db dbinfo, table string, emails []string) {
+	for _, email := range emails {
+		insertEmailIntoTable(db, table, email)
+	}
+}
+
+func selectAllFromTable(db dbinfo, table string) map[string]time.Time {
+	dataSourceName := fmt.Sprintf("user=%s password=%s dbname=%s sslmode=disable", db.dbUser, db.dbPassword, db.dbName)
+	database, err := sql.Open(db.dbDriver, dataSourceName)
+	if err != nil {
+		fmt.Println(err)
+	}
+	rows, err := database.Query("SELECT * FROM " + table + ";")
+	if err != nil {
+		fmt.Println(err)
+	}
+	var emailsMap map[string]time.Time
+	for rows.Next() {
+		var email string
+		var createdAt time.Time
+		err = rows.Scan(&email, &createdAt)
+		if err != nil {
+			fmt.Println(err)
+		}
+		emailsMap[email] = createdAt
+	}
+	return emailsMap
+}
+
+func deleteBasedOnEmail(db dbinfo, table string, email string) {
+	dataSourceName := fmt.Sprintf("user=%s password=%s dbname=%s sslmode=disable", db.dbUser, db.dbPassword, db.dbName)
+	database, err := sql.Open(db.dbDriver, dataSourceName)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	stmt, err := database.Prepare("DELETE FROM emails_array where email=$1")
+	if err != nil {
+		fmt.Println(err)
+	}
+	_, err = stmt.Exec(email)
+	if err != nil {
+		fmt.Println(err)
+	}
+}
+
 func setupRouts() {
 	http.HandleFunc("/send", send)
 	http.ListenAndServe(":8080", nil)
