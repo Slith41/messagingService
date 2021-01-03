@@ -76,6 +76,13 @@ func insertEmailIntoDatabase(db dbinfo, table string, email string) {
 		fmt.Println(err)
 	}
 }
+
+func insertEmailsIntoDatabase(db dbinfo, table string, emails []string) {
+	for _, email := range emails {
+		insertEmailIntoDatabase(db, table, email)
+	}
+}
+
 func setupRouts() {
 	http.HandleFunc("/send", send)
 	http.ListenAndServe(":8080", nil)
