@@ -69,6 +69,7 @@ func insertEmailIntoTable(db dbinfo, table string, email string) {
 	dataSourceName := fmt.Sprintf("user=%s password=%s dbname=%s sslmode=disable", db.dbUser, db.dbPassword, db.dbName)
 	database, err := sql.Open(db.dbDriver, dataSourceName)
 	checkErr(err)
+	defer database.Close()
 
 	err = database.QueryRow("INSERT INTO "+table+"(email) VALUES($1);", email).Scan()
 	checkErr(err)
@@ -85,9 +86,11 @@ func selectAllFromTable(db dbinfo, table string) map[string]time.Time {
 	dataSourceName := fmt.Sprintf("user=%s password=%s dbname=%s sslmode=disable", db.dbUser, db.dbPassword, db.dbName)
 	database, err := sql.Open(db.dbDriver, dataSourceName)
 	checkErr(err)
+	defer database.Close()
 
 	rows, err := database.Query("SELECT * FROM " + table + ";")
 	checkErr(err)
+	defer rows.Close()
 
 	var emailsMap map[string]time.Time
 	for rows.Next() {
@@ -105,9 +108,11 @@ func deleteBasedOnEmail(db dbinfo, table string, email string) {
 	dataSourceName := fmt.Sprintf("user=%s password=%s dbname=%s sslmode=disable", db.dbUser, db.dbPassword, db.dbName)
 	database, err := sql.Open(db.dbDriver, dataSourceName)
 	checkErr(err)
+	defer database.Close()
 
 	stmt, err := database.Prepare("DELETE FROM emails_array where email=$1")
 	checkErr(err)
+	defer stmt.Close()
 
 	_, err = stmt.Exec(email)
 	checkErr(err)
