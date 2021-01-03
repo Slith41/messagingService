@@ -83,6 +83,7 @@ func insertEmailsIntoTable(db dbinfo, table string, emails []string) {
 		insertEmailIntoTable(db, table, email)
 	}
 }
+
 func selectAllFromTable(db dbinfo, table string) map[string]time.Time {
 	dataSourceName := fmt.Sprintf("user=%s password=%s dbname=%s sslmode=disable", db.dbUser, db.dbPassword, db.dbName)
 	database, err := sql.Open(db.dbDriver, dataSourceName)
@@ -105,6 +106,24 @@ func selectAllFromTable(db dbinfo, table string) map[string]time.Time {
 	}
 	return emailsMap
 }
+
+func deleteBasedOnEmail(db dbinfo, table string, email string) {
+	dataSourceName := fmt.Sprintf("user=%s password=%s dbname=%s sslmode=disable", db.dbUser, db.dbPassword, db.dbName)
+	database, err := sql.Open(db.dbDriver, dataSourceName)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	stmt, err := database.Prepare("DELETE FROM emails_array where email=$1")
+	if err != nil {
+		fmt.Println(err)
+	}
+	_, err = stmt.Exec(email)
+	if err != nil {
+		fmt.Println(err)
+	}
+}
+
 func setupRouts() {
 	http.HandleFunc("/send", send)
 	http.ListenAndServe(":8080", nil)
