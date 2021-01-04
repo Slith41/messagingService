@@ -2,9 +2,13 @@ package main
 
 import "encoding/json"
 
-//Receiver struct contains an array of emails to which a message will be send
+//Receiver struct contains an array of users to which a message will be send
 type Receiver struct {
-	Emails []string
+	Users []user
+}
+
+type user struct {
+	Email string
 }
 
 func parseEmailsInJSON(JSONarray string) Receiver {
