@@ -121,6 +121,7 @@ func deleteBasedOnEmail(db dbinfo, table string, email string) {
 func setupRouts() {
 	http.HandleFunc("/send", send)
 	http.ListenAndServe(":8080", nil)
+	//
 }
 
 func main() {
