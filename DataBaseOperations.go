@@ -6,6 +6,7 @@ import (
 	"time"
 )
 
+//Dbinfo struct contains information about the database you are using
 type Dbinfo struct {
 	dbDriver   string
 	dbUser     string
@@ -35,11 +36,11 @@ func selectAllFromTable(db Dbinfo, table string) map[string]time.Time {
 	checkErr(err)
 	defer database.Close()
 
-	rows, err := database.Query("SELECT * FROM " + table + ";") //Writing SQL commands for taking data
+	rows, err := database.Query("SELECT * FROM " + table + ";")
 	checkErr(err)
 	defer rows.Close()
 
-	var emailsMap map[string]time.Time
+	emailsMap := make(map[string]time.Time)
 	for rows.Next() {
 		var email string
 		var createdAt time.Time
