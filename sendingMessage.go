@@ -6,6 +6,7 @@ import (
 	"net/smtp"
 )
 
+//Sender struct contains an information about the sender
 type Sender struct {
 	Email    string
 	Password string
