@@ -65,3 +65,8 @@ func deleteBasedOnEmail(db Dbinfo, table string, email string) {
 	_, err = stmt.Exec(email)
 	checkErr(err)
 }
+func deleteBaseOnMultipleEmails(db Dbinfo, table string, emails []string) {
+	for _, email := range emails {
+		deleteBasedOnEmail(db, table, email)
+	}
+}
