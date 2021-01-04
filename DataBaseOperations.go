@@ -6,14 +6,14 @@ import (
 	"time"
 )
 
-type dbinfo struct {
+type Dbinfo struct {
 	dbDriver   string
 	dbUser     string
 	dbPassword string
 	dbName     string
 }
 
-func insertEmailIntoTable(db dbinfo, table string, email string) {
+func insertEmailIntoTable(db Dbinfo, table string, email string) {
 	dataSourceName := fmt.Sprintf("user=%s password=%s dbname=%s sslmode=disable", db.dbUser, db.dbPassword, db.dbName)
 	database, err := sql.Open(db.dbDriver, dataSourceName)
 	checkErr(err)
@@ -23,13 +23,13 @@ func insertEmailIntoTable(db dbinfo, table string, email string) {
 	checkErr(err)
 }
 
-func insertEmailsIntoTable(db dbinfo, table string, emails []string) {
+func insertEmailsIntoTable(db Dbinfo, table string, emails []string) {
 	for _, email := range emails {
 		insertEmailIntoTable(db, table, email)
 	}
 }
 
-func selectAllFromTable(db dbinfo, table string) map[string]time.Time {
+func selectAllFromTable(db Dbinfo, table string) map[string]time.Time {
 	dataSourceName := fmt.Sprintf("user=%s password=%s dbname=%s sslmode=disable", db.dbUser, db.dbPassword, db.dbName)
 	database, err := sql.Open(db.dbDriver, dataSourceName)
 	checkErr(err)
@@ -51,7 +51,7 @@ func selectAllFromTable(db dbinfo, table string) map[string]time.Time {
 	return emailsMap
 }
 
-func deleteBasedOnEmail(db dbinfo, table string, email string) {
+func deleteBasedOnEmail(db Dbinfo, table string, email string) {
 	dataSourceName := fmt.Sprintf("user=%s password=%s dbname=%s sslmode=disable", db.dbUser, db.dbPassword, db.dbName)
 	database, err := sql.Open(db.dbDriver, dataSourceName)
 	checkErr(err)
