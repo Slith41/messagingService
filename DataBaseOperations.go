@@ -56,8 +56,10 @@ func selectAllFromTable(db Dbinfo, table string) []string {
 		checkErr(err)
 
 		emailsSlice = append(emailsSlice, email)
+
 	}
 	emails := make([]string, len(emailsSlice))
+	emails = emailsSlice
 	return emails
 }
 
