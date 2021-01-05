@@ -14,13 +14,21 @@ type Dbinfo struct {
 	dbName     string
 }
 
-func insertEmailIntoTable(db Dbinfo, table string, email string) {
+func openDatabaseConnection(db Dbinfo, table string) *sql.DB {
 	dataSourceName := fmt.Sprintf("user=%s password=%s dbname=%s sslmode=disable", db.dbUser, db.dbPassword, db.dbName)
 	database, err := sql.Open(db.dbDriver, dataSourceName)
 	checkErr(err)
+
+	return database
+}
+
+func insertEmailIntoTable(db Dbinfo, table string, email string) {
+
+	database := openDatabaseConnection(db, table)
+
 	defer database.Close()
 
-	err = database.QueryRow("INSERT INTO "+table+"(email) VALUES($1);", email).Scan()
+	err := database.QueryRow("INSERT INTO "+table+"(email) VALUES($1);", email).Scan()
 	checkErr(err)
 }
 
@@ -30,32 +38,35 @@ func insertEmailsIntoTable(db Dbinfo, table string, emails []string) {
 	}
 }
 
-func selectAllFromTable(db Dbinfo, table string) map[string]time.Time {
-	dataSourceName := fmt.Sprintf("user=%s password=%s dbname=%s sslmode=disable", db.dbUser, db.dbPassword, db.dbName)
-	database, err := sql.Open(db.dbDriver, dataSourceName)
-	checkErr(err)
+func selectAllFromTable(db Dbinfo, table string) []string {
+
+	database := openDatabaseConnection(db, table)
+
 	defer database.Close()
 
 	rows, err := database.Query("SELECT * FROM " + table + ";")
 	checkErr(err)
 	defer rows.Close()
 
-	emailsMap := make(map[string]time.Time)
+	emailsSlice := []string{}
 	for rows.Next() {
 		var email string
 		var createdAt time.Time
 		err = rows.Scan(&email, &createdAt)
 		checkErr(err)
 
-		emailsMap[email] = createdAt
+		emailsSlice = append(emailsSlice, email)
+
 	}
-	return emailsMap
+	emails := make([]string, len(emailsSlice))
+	emails = emailsSlice
+	return emails
 }
 
 func deleteBasedOnEmail(db Dbinfo, table string, email string) {
-	dataSourceName := fmt.Sprintf("user=%s password=%s dbname=%s sslmode=disable", db.dbUser, db.dbPassword, db.dbName)
-	database, err := sql.Open(db.dbDriver, dataSourceName)
-	checkErr(err)
+
+	database := openDatabaseConnection(db, table)
+
 	defer database.Close()
 
 	stmt, err := database.Prepare("DELETE FROM emails_array where email=$1")
